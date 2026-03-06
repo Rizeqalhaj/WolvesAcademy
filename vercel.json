@@ -1,0 +1,13 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": null,
+  "rewrites": [
+    { "source": "/api/stats", "destination": "/api/stats" },
+    { "source": "/api/players", "destination": "/api/players" },
+    { "source": "/api/sessions", "destination": "/api/sessions" },
+    { "source": "/api/attendance", "destination": "/api/attendance" },
+    { "source": "/api/chat", "destination": "/api/chat" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}

@@ -70,7 +70,7 @@ const Button = ({
   className?: string
 }) => {
   const variants = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700',
+    primary: 'bg-wolves-plum text-white hover:bg-wolves-plum-dark',
     secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200',
     outline: 'border border-gray-200 text-gray-700 hover:bg-gray-50',
     ghost: 'text-gray-600 hover:bg-gray-100'
@@ -88,10 +88,10 @@ const Button = ({
 
 const Badge = ({ children, color = 'blue' }: { children: React.ReactNode, color?: 'blue' | 'green' | 'red' | 'orange' }) => {
   const colors = {
-    blue: 'bg-blue-50 text-blue-600',
+    blue: 'bg-wolves-plum-light text-wolves-plum',
     green: 'bg-green-50 text-green-600',
     red: 'bg-red-50 text-red-600',
-    orange: 'bg-orange-50 text-orange-600'
+    orange: 'bg-wolves-gold-light text-wolves-gold'
   };
   return (
     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${colors[color]}`}>
@@ -134,7 +134,7 @@ const ScheduleView = () => {
               <span className="text-xs font-medium text-gray-400">{(i % 31) + 1}</span>
               <div className="mt-2 space-y-1">
                 {daySessions.map(s => (
-                  <div key={s.id} className="text-[10px] p-1 bg-blue-50 text-blue-600 rounded font-bold truncate">
+                  <div key={s.id} className="text-[10px] p-1 bg-wolves-plum-light text-wolves-plum rounded font-bold truncate">
                     {new Date(s.start_time).getHours()}:00 - {s.group_name}
                   </div>
                 ))}
@@ -175,7 +175,7 @@ const PlayersView = () => {
             <input 
               type="text" 
               placeholder="Search by name, email, or group..." 
-              className="pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none w-80"
+              className="pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-wolves-plum outline-none w-80"
             />
           </div>
         </div>
@@ -198,7 +198,7 @@ const PlayersView = () => {
                 <tr key={player.id} className="group hover:bg-gray-50/50 transition-colors">
                   <td className="py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                      <div className="w-10 h-10 rounded-xl bg-wolves-plum-light flex items-center justify-center text-wolves-plum font-bold">
                         {player.name.charAt(0)}
                       </div>
                       <div>
@@ -211,7 +211,7 @@ const PlayersView = () => {
                   <td className="py-4 font-medium">{player.sessions_remaining} left</td>
                   <td className="py-4 font-medium">JOD {player.balance}</td>
                   <td className="py-4">
-                    <div className="flex items-center gap-1 text-orange-500 font-bold">
+                    <div className="flex items-center gap-1 text-wolves-gold font-bold">
                       <Trophy size={14} /> {player.loyalty_points}
                     </div>
                   </td>
@@ -268,7 +268,7 @@ const AttendanceView = ({ role }: { role: Role }) => {
             <Card 
               key={s.id} 
               onClick={() => setSelectedSession(s)}
-              className={`${selectedSession?.id === s.id ? 'border-blue-500 ring-2 ring-blue-500/10' : ''}`}
+              className={`${selectedSession?.id === s.id ? 'border-wolves-plum ring-2 ring-wolves-plum/10' : ''}`}
             >
               <div className="flex justify-between items-center">
                 <div>
@@ -292,7 +292,7 @@ const AttendanceView = ({ role }: { role: Role }) => {
                 {players.filter(p => p.group_name === selectedSession.group_name).map(player => (
                   <div key={player.id} className="flex justify-between items-center p-4 bg-gray-50 rounded-2xl">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                      <div className="w-10 h-10 rounded-full bg-wolves-plum-light flex items-center justify-center text-wolves-plum font-bold">
                         {player.name.charAt(0)}
                       </div>
                       <div>
@@ -350,7 +350,7 @@ const PerformanceView = ({ role, user }: { role: Role, user: User }) => {
                 <motion.div 
                   initial={{ height: 0 }}
                   animate={{ height: `${h}%` }}
-                  className="w-full bg-blue-500 rounded-t-lg"
+                  className="w-full bg-wolves-plum rounded-t-lg"
                 />
                 <span className="text-[10px] font-bold text-gray-400 uppercase">Week {i+1}</span>
               </div>
@@ -374,7 +374,7 @@ const PerformanceView = ({ role, user }: { role: Role, user: User }) => {
                   <span className="font-bold">{skill.value}%</span>
                 </div>
                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-500" style={{ width: `${skill.value}%` }} />
+                  <div className="h-full bg-wolves-plum" style={{ width: `${skill.value}%` }} />
                 </div>
               </div>
             ))}
@@ -385,9 +385,9 @@ const PerformanceView = ({ role, user }: { role: Role, user: User }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
           { label: 'Attendance Streak', value: '12 Days', icon: CheckCircle2, color: 'text-green-600' },
-          { label: 'Total Badges', value: '8 Earned', icon: Trophy, color: 'text-orange-600' },
-          { label: 'Coach Rating', value: '4.8/5.0', icon: MessageSquare, color: 'text-blue-600' },
-          { label: 'Rank in Group', value: '#3 of 24', icon: TrendingUp, color: 'text-purple-600' }
+          { label: 'Total Badges', value: '8 Earned', icon: Trophy, color: 'text-wolves-gold' },
+          { label: 'Coach Rating', value: '4.8/5.0', icon: MessageSquare, color: 'text-wolves-plum' },
+          { label: 'Rank in Group', value: '#3 of 24', icon: TrendingUp, color: 'text-wolves-rose' }
         ].map(stat => (
           <Card key={stat.label}>
             <stat.icon className={`${stat.color} mb-4`} size={24} />
@@ -423,7 +423,7 @@ const PaymentsView = ({ role, user }: { role: Role, user: User }) => {
             ].map(txn => (
               <div key={txn.id} className="flex justify-between items-center p-4 hover:bg-gray-50 rounded-2xl transition-colors border border-transparent hover:border-gray-100">
                 <div className="flex items-center gap-4">
-                  <div className={`p-2 rounded-lg ${txn.status === 'Completed' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
+                  <div className={`p-2 rounded-lg ${txn.status === 'Completed' ? 'bg-green-50 text-green-600' : 'bg-wolves-gold-light text-wolves-gold'}`}>
                     <CreditCard size={20} />
                   </div>
                   <div>
@@ -441,7 +441,7 @@ const PaymentsView = ({ role, user }: { role: Role, user: User }) => {
         </Card>
 
         <div className="space-y-6">
-          <Card className="bg-blue-600 text-white border-none">
+          <Card className="bg-wolves-plum text-white border-none">
             <h3 className="font-bold mb-4">Quick Actions</h3>
             <div className="space-y-3">
               <Button variant="secondary" className="w-full">Generate Invoice</Button>
@@ -454,10 +454,10 @@ const PaymentsView = ({ role, user }: { role: Role, user: User }) => {
             <h3 className="font-bold mb-4">Revenue by Method</h3>
             <div className="space-y-4">
               {[
-                { label: 'CliQ', value: 45, color: 'bg-blue-500' },
-                { label: 'Credit Card', value: 30, color: 'bg-purple-500' },
-                { label: 'Apple Pay', value: 15, color: 'bg-black' },
-                { label: 'Cash', value: 10, color: 'bg-green-500' }
+                { label: 'CliQ', value: 45, color: 'bg-wolves-plum' },
+                { label: 'Credit Card', value: 30, color: 'bg-wolves-rose' },
+                { label: 'Apple Pay', value: 15, color: 'bg-wolves-plum-dark' },
+                { label: 'Cash', value: 10, color: 'bg-wolves-copper' }
               ].map(item => (
                 <div key={item.label} className="flex items-center gap-3">
                   <div className={`w-3 h-3 rounded-full ${item.color}`} />
@@ -485,7 +485,7 @@ const SettingsView = ({ user }: { user: User }) => {
         <div className="space-y-6">
           <Card>
             <div className="flex flex-col items-center text-center p-4">
-              <div className="w-24 h-24 rounded-3xl bg-blue-100 flex items-center justify-center text-blue-600 text-3xl font-bold mb-4">
+              <div className="w-24 h-24 rounded-3xl bg-wolves-plum-light flex items-center justify-center text-wolves-plum text-3xl font-bold mb-4">
                 {user.name.charAt(0)}
               </div>
               <h3 className="text-xl font-bold">{user.name}</h3>
@@ -519,7 +519,7 @@ const SettingsView = ({ user }: { user: User }) => {
                     <p className="font-bold text-gray-900">{pref.label}</p>
                     <p className="text-sm text-gray-500">{pref.desc}</p>
                   </div>
-                  <div className={`w-12 h-6 rounded-full p-1 transition-colors cursor-pointer ${pref.enabled ? 'bg-blue-600' : 'bg-gray-200'}`}>
+                  <div className={`w-12 h-6 rounded-full p-1 transition-colors cursor-pointer ${pref.enabled ? 'bg-wolves-plum' : 'bg-gray-200'}`}>
                     <div className={`w-4 h-4 bg-white rounded-full transition-transform ${pref.enabled ? 'translate-x-6' : 'translate-x-0'}`} />
                   </div>
                 </div>
@@ -580,7 +580,7 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+            <div className="p-2 bg-wolves-plum-light rounded-lg text-wolves-plum">
               <Users size={20} />
             </div>
             <Badge color="green">+12%</Badge>
@@ -600,7 +600,7 @@ const AdminDashboard = () => {
         </Card>
         <Card>
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-orange-50 rounded-lg text-orange-600">
+            <div className="p-2 bg-wolves-gold-light rounded-lg text-wolves-gold">
               <Calendar size={20} />
             </div>
             <Badge color="orange">Busy</Badge>
@@ -610,7 +610,7 @@ const AdminDashboard = () => {
         </Card>
         <Card>
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2 bg-purple-50 rounded-lg text-purple-600">
+            <div className="p-2 bg-wolves-rose/10 rounded-lg text-wolves-rose">
               <ClipboardCheck size={20} />
             </div>
             <Badge color="green">94%</Badge>
@@ -629,7 +629,7 @@ const AdminDashboard = () => {
               <input 
                 type="text" 
                 placeholder="Search players..." 
-                className="pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none w-64"
+                className="pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-wolves-plum outline-none w-64"
               />
             </div>
           </div>
@@ -649,7 +649,7 @@ const AdminDashboard = () => {
                   <tr key={player.id} className="group hover:bg-gray-50/50 transition-colors">
                     <td className="py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                        <div className="w-8 h-8 rounded-full bg-wolves-plum-light flex items-center justify-center text-wolves-plum font-bold text-xs">
                           {player.name.charAt(0)}
                         </div>
                         <div>
@@ -666,7 +666,7 @@ const AdminDashboard = () => {
                         <span className="text-sm font-medium">{player.sessions_remaining}</span>
                         <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
                           <div 
-                            className="h-full bg-blue-500" 
+                            className="h-full bg-wolves-plum" 
                             style={{ width: `${(player.sessions_remaining / 12) * 100}%` }}
                           />
                         </div>
@@ -700,8 +700,8 @@ const AdminDashboard = () => {
             ].map((activity, i) => (
               <div key={i} className="flex gap-4">
                 <div className={`w-2 h-2 rounded-full mt-2 ${
-                  activity.type === 'payment' ? 'bg-green-500' : 
-                  activity.type === 'attendance' ? 'bg-blue-500' : 'bg-orange-500'
+                  activity.type === 'payment' ? 'bg-wolves-copper' :
+                  activity.type === 'attendance' ? 'bg-wolves-plum' : 'bg-wolves-gold'
                 }`} />
                 <div>
                   <p className="text-sm font-medium text-gray-900">{activity.user}</p>
@@ -737,10 +737,10 @@ const CoachView = ({ user }: { user: User }) => {
         <div className="lg:col-span-2 space-y-6">
           <h2 className="text-xl font-bold">Today's Sessions</h2>
           {sessions.map(session => (
-            <Card key={session.id} className="hover:border-blue-200 transition-colors cursor-pointer" onClick={() => setSelectedSession(session)}>
+            <Card key={session.id} className="hover:border-wolves-peach transition-colors cursor-pointer" onClick={() => setSelectedSession(session)}>
               <div className="flex justify-between items-center">
                 <div className="flex gap-4 items-center">
-                  <div className="p-3 bg-blue-50 rounded-xl text-blue-600">
+                  <div className="p-3 bg-wolves-plum-light rounded-xl text-wolves-plum">
                     <Clock size={24} />
                   </div>
                   <div>
@@ -770,9 +770,9 @@ const CoachView = ({ user }: { user: User }) => {
             </div>
           </Card>
           
-          <Card className="bg-blue-600 text-white border-none">
+          <Card className="bg-wolves-plum text-white border-none">
             <h3 className="font-bold mb-2">My Payouts</h3>
-            <p className="text-blue-100 text-sm mb-4">You have 12 unclaimed sessions this month.</p>
+            <p className="text-wolves-plum-light text-sm mb-4">You have 12 unclaimed sessions this month.</p>
             <div className="text-2xl font-bold mb-4">JOD 180.00</div>
             <Button variant="secondary" className="w-full">Claim All Sessions</Button>
           </Card>
@@ -802,18 +802,16 @@ const PlayerView = ({ user }: { user: User }) => {
         <div className="flex items-center gap-4">
           <div className="text-right">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Loyalty Points</p>
-            <p className="text-xl font-bold text-blue-600">{playerData?.loyalty_points || 0}</p>
+            <p className="text-xl font-bold text-wolves-plum">{playerData?.loyalty_points || 0}</p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600">
-            <Trophy size={24} />
-          </div>
+          <img src="/wolves-logo.png" alt="Wolves" className="w-12 h-12 rounded-2xl object-cover" />
         </div>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="md:col-span-2 bg-gradient-to-br from-blue-600 to-blue-700 text-white border-none relative overflow-hidden">
+        <Card className="md:col-span-2 bg-gradient-to-br from-wolves-copper to-wolves-plum text-white border-none relative overflow-hidden">
           <div className="relative z-10">
-            <h2 className="text-lg font-medium text-blue-100 mb-1">Sessions Remaining</h2>
+            <h2 className="text-lg font-medium text-wolves-plum-light mb-1">Sessions Remaining</h2>
             <div className="text-5xl font-bold mb-6">{playerData?.sessions_remaining || 0}</div>
             <div className="flex gap-3">
               <Button variant="secondary">Renew Package</Button>
@@ -830,7 +828,7 @@ const PlayerView = ({ user }: { user: User }) => {
           <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 mb-4">
             <div className="flex items-center gap-3 mb-3">
               <div className="p-2 bg-white rounded-lg shadow-sm">
-                <Calendar size={18} className="text-blue-600" />
+                <Calendar size={18} className="text-wolves-plum" />
               </div>
               <div>
                 <p className="text-sm font-bold">Tomorrow, 17:00</p>
@@ -851,10 +849,10 @@ const PlayerView = ({ user }: { user: User }) => {
           </div>
           <div className="space-y-6">
             {[
-              { label: 'Shooting', value: 85, color: 'bg-blue-500' },
-              { label: 'Dribbling', value: 72, color: 'bg-green-500' },
-              { label: 'Footwork', value: 90, color: 'bg-orange-500' },
-              { label: 'IQ', value: 65, color: 'bg-purple-500' }
+              { label: 'Shooting', value: 85, color: 'bg-wolves-plum' },
+              { label: 'Dribbling', value: 72, color: 'bg-wolves-copper' },
+              { label: 'Footwork', value: 90, color: 'bg-wolves-gold' },
+              { label: 'IQ', value: 65, color: 'bg-wolves-rose' }
             ].map(stat => (
               <div key={stat.label}>
                 <div className="flex justify-between text-sm mb-2">
@@ -943,14 +941,14 @@ const Chatbot = ({ userId }: { userId: number }) => {
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             className="absolute bottom-20 right-0 w-96 h-[500px] bg-white rounded-3xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
           >
-            <div className="p-4 bg-blue-600 text-white flex justify-between items-center">
+            <div className="p-4 bg-wolves-plum text-white flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
                   <MessageSquare size={18} />
                 </div>
                 <div>
                   <p className="font-bold text-sm">Wolves AI</p>
-                  <p className="text-[10px] text-blue-100">Online • Amman, Jordan</p>
+                  <p className="text-[10px] text-wolves-plum-light">Online • Amman, Jordan</p>
                 </div>
               </div>
               <button onClick={() => setIsOpen(false)} className="p-1 hover:bg-white/10 rounded-lg">
@@ -962,7 +960,7 @@ const Chatbot = ({ userId }: { userId: number }) => {
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.isBot ? 'justify-start' : 'justify-end'}`}>
                   <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${
-                    msg.isBot ? 'bg-gray-100 text-gray-800 rounded-tl-none' : 'bg-blue-600 text-white rounded-tr-none'
+                    msg.isBot ? 'bg-gray-100 text-gray-800 rounded-tl-none' : 'bg-wolves-plum text-white rounded-tr-none'
                   }`}>
                     {msg.text}
                   </div>
@@ -986,11 +984,11 @@ const Chatbot = ({ userId }: { userId: number }) => {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                 placeholder="Ask about your balance, schedule..."
-                className="flex-1 bg-gray-50 border-none rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 bg-gray-50 border-none rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-wolves-plum"
               />
               <button 
                 onClick={handleSend}
-                className="p-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                className="p-2 bg-wolves-plum text-white rounded-xl hover:bg-wolves-plum-dark transition-colors"
               >
                 <ChevronRight size={20} />
               </button>
@@ -1001,7 +999,7 @@ const Chatbot = ({ userId }: { userId: number }) => {
 
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 bg-blue-600 text-white rounded-2xl shadow-xl flex items-center justify-center hover:bg-blue-700 transition-all active:scale-90"
+        className="w-14 h-14 bg-wolves-plum text-white rounded-2xl shadow-xl flex items-center justify-center hover:bg-wolves-plum-dark transition-all active:scale-90"
       >
         <MessageSquare size={24} />
       </button>
@@ -1031,9 +1029,7 @@ export default function App() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
         <Card className="max-w-md w-full p-8 text-center">
-          <div className="w-20 h-20 bg-blue-600 rounded-3xl mx-auto mb-6 flex items-center justify-center text-white">
-            <Trophy size={40} />
-          </div>
+          <img src="/wolves-logo.png" alt="Wolves Academy" className="w-20 h-20 rounded-3xl mx-auto mb-6 object-cover" />
           <h1 className="text-2xl font-bold mb-2">Wolves Sports Academy</h1>
           <p className="text-gray-500 mb-8">Digital Transformation Platform</p>
           
@@ -1093,9 +1089,7 @@ export default function App() {
         <div className="p-6 flex items-center justify-between">
           {isSidebarOpen && (
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
-                <Trophy size={18} />
-              </div>
+              <img src="/wolves-logo.png" alt="Wolves" className="w-8 h-8 rounded-lg object-cover" />
               <span className="font-bold text-lg tracking-tight">Wolves</span>
             </div>
           )}
@@ -1110,10 +1104,10 @@ export default function App() {
               key={i}
               onClick={() => setActiveTab(item.label)}
               className={`w-full flex items-center gap-4 p-3 rounded-xl transition-all group ${
-                activeTab === item.label ? 'bg-blue-50 text-blue-600' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                activeTab === item.label ? 'bg-wolves-plum-light text-wolves-plum' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
-              <item.icon size={20} className={activeTab === item.label ? 'text-blue-600' : 'group-hover:text-blue-600'} />
+              <item.icon size={20} className={activeTab === item.label ? 'text-wolves-plum' : 'group-hover:text-wolves-plum'} />
               {isSidebarOpen && <span className="font-medium">{item.label}</span>}
             </button>
           ))}
@@ -1139,7 +1133,7 @@ export default function App() {
               <input 
                 type="text" 
                 placeholder="Search anything..." 
-                className="pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none w-64"
+                className="pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-wolves-plum outline-none w-64"
               />
             </div>
           </div>
@@ -1151,9 +1145,9 @@ export default function App() {
             <div className="flex items-center gap-3 pl-6 border-l border-gray-100">
               <div className="text-right">
                 <p className="text-sm font-bold text-gray-900">{user.name}</p>
-                <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{user.role}</p>
+                <p className="text-[10px] font-bold text-wolves-plum uppercase tracking-widest">{user.role}</p>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+              <div className="w-10 h-10 rounded-xl bg-wolves-plum-light flex items-center justify-center text-wolves-plum font-bold">
                 {user.name.charAt(0)}
               </div>
             </div>

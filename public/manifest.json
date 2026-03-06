@@ -1,0 +1,24 @@
+{
+  "name": "Wolves Sports Academy",
+  "short_name": "Wolves",
+  "description": "Digital Transformation Platform for Wolves Sports Academy",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8F9FA",
+  "theme_color": "#a0517f",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/wolves-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/wolves-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

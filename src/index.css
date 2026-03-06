@@ -3,6 +3,19 @@
 
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Wolves Academy Brand Palette */
+  --color-wolves-gold: #f2bb14;
+  --color-wolves-gold-light: #fef9e8;
+  --color-wolves-plum: #a0517f;
+  --color-wolves-plum-dark: #8a4569;
+  --color-wolves-plum-light: #faf2f6;
+  --color-wolves-peach: #de9e78;
+  --color-wolves-amber: #de9f39;
+  --color-wolves-rose: #a0566b;
+  --color-wolves-terra: #be7768;
+  --color-wolves-copper: #b47242;
+  --color-wolves-copper-dark: #9a6138;
 }
 
 body {
