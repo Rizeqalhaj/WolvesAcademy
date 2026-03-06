@@ -110,9 +110,9 @@ const ScheduleView = () => {
 
   return (
     <div className="space-y-8">
-      <header className="flex justify-between items-end">
+      <header className="flex flex-col sm:flex-row justify-between sm:items-end gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Academy Schedule</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Academy Schedule</h1>
           <p className="text-gray-500 mt-1">Manage and view all basketball sessions</p>
         </div>
         <div className="flex gap-3">
@@ -121,7 +121,7 @@ const ScheduleView = () => {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
+      <div className="grid grid-cols-7 gap-1 sm:gap-4 overflow-x-auto">
         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
           <div key={day} className="text-center py-2">
             <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{day}</span>
@@ -155,41 +155,41 @@ const PlayersView = () => {
 
   return (
     <div className="space-y-8">
-      <header className="flex justify-between items-end">
+      <header className="flex flex-col sm:flex-row justify-between sm:items-end gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Player Directory</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Player Directory</h1>
           <p className="text-gray-500 mt-1">Manage all 240+ academy members</p>
         </div>
-        <Button><Plus size={18} /> Register Player</Button>
+        <Button className="whitespace-nowrap text-sm sm:text-base"><Plus size={18} /> <span className="hidden sm:inline">Register</span> Player</Button>
       </header>
 
       <Card>
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex gap-4">
-            <Button variant="secondary" className="text-sm">All Players</Button>
-            <Button variant="ghost" className="text-sm">Trial Requests</Button>
-            <Button variant="ghost" className="text-sm">Inactive</Button>
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
+          <div className="flex gap-2 sm:gap-4 overflow-x-auto">
+            <Button variant="secondary" className="text-sm whitespace-nowrap">All Players</Button>
+            <Button variant="ghost" className="text-sm whitespace-nowrap">Trial Requests</Button>
+            <Button variant="ghost" className="text-sm whitespace-nowrap">Inactive</Button>
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-            <input 
-              type="text" 
-              placeholder="Search by name, email, or group..." 
-              className="pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-wolves-plum outline-none w-80"
+            <input
+              type="text"
+              placeholder="Search by name, email, or group..."
+              className="pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-wolves-plum outline-none w-full sm:w-80"
             />
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="overflow-x-auto -mx-6 px-6">
+          <table className="w-full min-w-[600px]">
             <thead>
               <tr className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">
-                <th className="pb-4">Player</th>
-                <th className="pb-4">Group</th>
-                <th className="pb-4">Sessions</th>
-                <th className="pb-4">Balance</th>
-                <th className="pb-4">Loyalty</th>
-                <th className="pb-4">Status</th>
+                <th className="pb-4 pr-4 whitespace-nowrap">Player</th>
+                <th className="pb-4 pr-4 whitespace-nowrap">Group</th>
+                <th className="pb-4 pr-4 whitespace-nowrap">Sessions</th>
+                <th className="pb-4 pr-4 whitespace-nowrap">Balance</th>
+                <th className="pb-4 pr-4 whitespace-nowrap">Loyalty</th>
+                <th className="pb-4 pr-4 whitespace-nowrap">Status</th>
                 <th className="pb-4"></th>
               </tr>
             </thead>
@@ -257,7 +257,7 @@ const AttendanceView = ({ role }: { role: Role }) => {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Attendance Tracking</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Attendance Tracking</h1>
         <p className="text-gray-500 mt-1">Mark attendance for today's sessions</p>
       </header>
 
@@ -337,7 +337,7 @@ const PerformanceView = ({ role, user }: { role: Role, user: User }) => {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Performance Analytics</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Performance Analytics</h1>
         <p className="text-gray-500 mt-1">Track progress across all basketball metrics</p>
       </header>
 
@@ -403,9 +403,9 @@ const PerformanceView = ({ role, user }: { role: Role, user: User }) => {
 const PaymentsView = ({ role, user }: { role: Role, user: User }) => {
   return (
     <div className="space-y-8">
-      <header className="flex justify-between items-end">
+      <header className="flex flex-col sm:flex-row justify-between sm:items-end gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Financial Management</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Financial Management</h1>
           <p className="text-gray-500 mt-1">Track payments, invoices, and academy revenue</p>
         </div>
         <Button><Plus size={18} /> New Payment</Button>
@@ -477,7 +477,7 @@ const SettingsView = ({ user }: { user: User }) => {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Settings</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Settings</h1>
         <p className="text-gray-500 mt-1">Manage your account and academy preferences</p>
       </header>
 
@@ -569,9 +569,9 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-8">
-      <header className="flex justify-between items-end">
+      <header className="flex flex-col sm:flex-row justify-between sm:items-end gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Academy Overview</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Academy Overview</h1>
           <p className="text-gray-500 mt-1">Real-time performance metrics</p>
         </div>
         <Button><Plus size={18} /> New Session</Button>
@@ -629,18 +629,18 @@ const AdminDashboard = () => {
               <input 
                 type="text" 
                 placeholder="Search players..." 
-                className="pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-wolves-plum outline-none w-64"
+                className="pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-wolves-plum outline-none w-full sm:w-64"
               />
             </div>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div className="overflow-x-auto -mx-6 px-6">
+            <table className="w-full min-w-[500px]">
               <thead>
-                <tr className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider border-bottom border-gray-100">
-                  <th className="pb-4">Player</th>
-                  <th className="pb-4">Group</th>
-                  <th className="pb-4">Sessions</th>
-                  <th className="pb-4">Status</th>
+                <tr className="text-left text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                  <th className="pb-4 pr-4 whitespace-nowrap">Player</th>
+                  <th className="pb-4 pr-4 whitespace-nowrap">Group</th>
+                  <th className="pb-4 pr-4 whitespace-nowrap">Sessions</th>
+                  <th className="pb-4 pr-4 whitespace-nowrap">Status</th>
                   <th className="pb-4"></th>
                 </tr>
               </thead>
@@ -729,7 +729,7 @@ const CoachView = ({ user }: { user: User }) => {
   return (
     <div className="space-y-8">
       <header>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">Coach Dashboard</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Coach Dashboard</h1>
         <p className="text-gray-500 mt-1">Welcome back, {user.name}</p>
       </header>
 
@@ -794,9 +794,9 @@ const PlayerView = ({ user }: { user: User }) => {
 
   return (
     <div className="space-y-8">
-      <header className="flex justify-between items-start">
+      <header className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Welcome, {user.name}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Welcome, {user.name}</h1>
           <p className="text-gray-500 mt-1">Group {playerData?.group_name || 'G1'} • Wolves Academy</p>
         </div>
         <div className="flex items-center gap-4">
@@ -812,7 +812,7 @@ const PlayerView = ({ user }: { user: User }) => {
         <Card className="md:col-span-2 bg-gradient-to-br from-wolves-copper to-wolves-plum text-white border-none relative overflow-hidden">
           <div className="relative z-10">
             <h2 className="text-lg font-medium text-wolves-plum-light mb-1">Sessions Remaining</h2>
-            <div className="text-5xl font-bold mb-6">{playerData?.sessions_remaining || 0}</div>
+            <div className="text-4xl sm:text-5xl font-bold mb-6">{playerData?.sessions_remaining || 0}</div>
             <div className="flex gap-3">
               <Button variant="secondary">Renew Package</Button>
               <Button variant="ghost" className="text-white hover:bg-white/10">Freeze Account</Button>
@@ -932,14 +932,14 @@ const Chatbot = ({ userId }: { userId: number }) => {
   };
 
   return (
-    <div className="fixed bottom-8 right-8 z-50">
+    <div className="fixed bottom-6 right-4 md:bottom-8 md:right-8 z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       <AnimatePresence>
         {isOpen && (
           <motion.div 
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="absolute bottom-20 right-0 w-96 h-[500px] bg-white rounded-3xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
+            className="absolute bottom-20 right-0 w-[calc(100vw-2rem)] sm:w-96 h-[70vh] sm:h-[500px] bg-white rounded-3xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden"
           >
             <div className="p-4 bg-wolves-plum text-white flex justify-between items-center">
               <div className="flex items-center gap-3">
@@ -1011,8 +1011,21 @@ const Chatbot = ({ userId }: { userId: number }) => {
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('Dashboard');
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+
+  useEffect(() => {
+    const handler = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (!mobile && !isSidebarOpen) setIsSidebarOpen(true);
+      if (mobile) setIsSidebarOpen(false);
+    };
+    window.addEventListener('resize', handler);
+    handler();
+    return () => window.removeEventListener('resize', handler);
+  }, []);
 
   // Simple login simulation
   const login = (role: Role) => {
@@ -1027,8 +1040,8 @@ export default function App() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-        <Card className="max-w-md w-full p-8 text-center">
+      <div className="min-h-[100dvh] bg-gray-50 flex items-center justify-center p-4 sm:p-6">
+        <Card className="max-w-md w-full p-6 sm:p-8 text-center">
           <img src="/wolves-logo.png" alt="Wolves Academy" className="w-20 h-20 rounded-3xl mx-auto mb-6 object-cover" />
           <h1 className="text-2xl font-bold mb-2">Wolves Sports Academy</h1>
           <p className="text-gray-500 mb-8">Digital Transformation Platform</p>
@@ -1078,72 +1091,105 @@ export default function App() {
     }
   };
 
+  const handleNavClick = (label: string) => {
+    setActiveTab(label);
+    if (isMobile) setIsSidebarOpen(false);
+  };
+
   return (
-    <div className="min-h-screen bg-[#F8F9FA] flex">
+    <div className="min-h-[100dvh] bg-[#F8F9FA] flex">
+      {/* Mobile backdrop */}
+      <AnimatePresence>
+        {isMobile && isSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-black/40 z-40"
+          />
+        )}
+      </AnimatePresence>
+
       {/* Sidebar */}
-      <motion.aside 
+      <motion.aside
         initial={false}
-        animate={{ width: isSidebarOpen ? 280 : 80 }}
-        className="bg-white border-r border-gray-100 flex flex-col fixed h-full z-40"
+        animate={{
+          width: isMobile ? 280 : (isSidebarOpen ? 280 : 80),
+          x: isMobile ? (isSidebarOpen ? 0 : -280) : 0
+        }}
+        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+        className="bg-white border-r border-gray-100 flex flex-col fixed h-full z-50"
       >
         <div className="p-6 flex items-center justify-between">
-          {isSidebarOpen && (
+          {(isSidebarOpen || isMobile) && (
             <div className="flex items-center gap-3">
               <img src="/wolves-logo.png" alt="Wolves" className="w-8 h-8 rounded-lg object-cover" />
               <span className="font-bold text-lg tracking-tight">Wolves</span>
             </div>
           )}
-          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-gray-50 rounded-lg text-gray-400">
+          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 hover:bg-gray-50 rounded-lg text-gray-400 min-w-[44px] min-h-[44px] flex items-center justify-center">
             {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 mt-4">
+        <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
           {navItems.map((item, i) => (
-            <button 
+            <button
               key={i}
-              onClick={() => setActiveTab(item.label)}
-              className={`w-full flex items-center gap-4 p-3 rounded-xl transition-all group ${
+              onClick={() => handleNavClick(item.label)}
+              className={`w-full flex items-center gap-4 p-3 rounded-xl transition-all group min-h-[44px] ${
                 activeTab === item.label ? 'bg-wolves-plum-light text-wolves-plum' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
               }`}
             >
               <item.icon size={20} className={activeTab === item.label ? 'text-wolves-plum' : 'group-hover:text-wolves-plum'} />
-              {isSidebarOpen && <span className="font-medium">{item.label}</span>}
+              {(isSidebarOpen || isMobile) && <span className="font-medium">{item.label}</span>}
             </button>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-gray-100">
-          <button 
+        <div className="p-4 border-t border-gray-100" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
+          <button
             onClick={() => setUser(null)}
-            className="w-full flex items-center gap-4 p-3 rounded-xl text-red-500 hover:bg-red-50 transition-all"
+            className="w-full flex items-center gap-4 p-3 rounded-xl text-red-500 hover:bg-red-50 transition-all min-h-[44px]"
           >
             <XCircle size={20} />
-            {isSidebarOpen && <span className="font-medium">Logout</span>}
+            {(isSidebarOpen || isMobile) && <span className="font-medium">Logout</span>}
           </button>
         </div>
       </motion.aside>
 
       {/* Main Content */}
-      <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-[280px]' : 'ml-[80px]'}`}>
-        <nav className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-8 sticky top-0 z-30">
-          <div className="flex items-center gap-4">
-            <div className="relative">
+      <main className={`flex-1 transition-all duration-300 ${isMobile ? 'ml-0' : (isSidebarOpen ? 'ml-[280px]' : 'ml-[80px]')}`}>
+        <nav className="h-16 md:h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 md:px-8 sticky top-0 z-30">
+          <div className="flex items-center gap-3">
+            {isMobile && (
+              <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-gray-500 hover:bg-gray-50 rounded-xl min-w-[44px] min-h-[44px] flex items-center justify-center">
+                <Menu size={22} />
+              </button>
+            )}
+            <div className="relative hidden sm:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-              <input 
-                type="text" 
-                placeholder="Search anything..." 
-                className="pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-wolves-plum outline-none w-64"
+              <input
+                type="text"
+                placeholder="Search anything..."
+                className="pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-wolves-plum outline-none w-48 md:w-64"
               />
             </div>
+            {isMobile && (
+              <div className="flex items-center gap-2">
+                <img src="/wolves-logo.png" alt="Wolves" className="w-7 h-7 rounded-md object-cover" />
+                <span className="font-bold text-sm tracking-tight">Wolves</span>
+              </div>
+            )}
           </div>
-          <div className="flex items-center gap-6">
-            <button className="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-all">
+          <div className="flex items-center gap-3 md:gap-6">
+            <button className="relative p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-xl transition-all min-w-[44px] min-h-[44px] flex items-center justify-center">
               <Bell size={20} />
               <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
             </button>
-            <div className="flex items-center gap-3 pl-6 border-l border-gray-100">
-              <div className="text-right">
+            <div className="flex items-center gap-2 md:gap-3 pl-3 md:pl-6 border-l border-gray-100">
+              <div className="text-right hidden sm:block">
                 <p className="text-sm font-bold text-gray-900">{user.name}</p>
                 <p className="text-[10px] font-bold text-wolves-plum uppercase tracking-widest">{user.role}</p>
               </div>
@@ -1154,7 +1200,7 @@ export default function App() {
           </div>
         </nav>
 
-        <div className="p-8 max-w-7xl mx-auto">
+        <div className="p-4 md:p-8 max-w-7xl mx-auto pb-24 md:pb-8">
           {renderContent()}
         </div>
       </main>
