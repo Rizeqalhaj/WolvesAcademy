@@ -1040,7 +1040,7 @@ export default function App() {
 
   if (!user) {
     return (
-      <div className="min-h-[100dvh] bg-gray-50 flex items-center justify-center p-4 sm:p-6">
+      <div className="min-h-[100dvh] bg-gray-50 flex items-center justify-center p-4 sm:p-6" style={{ paddingTop: 'env(safe-area-inset-top, 16px)' }}>
         <Card className="max-w-md w-full p-6 sm:p-8 text-center">
           <img src="/wolves-logo.png" alt="Wolves Academy" className="w-20 h-20 rounded-3xl mx-auto mb-6 object-cover" />
           <h1 className="text-2xl font-bold mb-2">Wolves Sports Academy</h1>
@@ -1120,6 +1120,7 @@ export default function App() {
         }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
         className="bg-white border-r border-gray-100 flex flex-col fixed h-full z-50"
+        style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
       >
         <div className="p-6 flex items-center justify-between">
           {(isSidebarOpen || isMobile) && (
@@ -1161,7 +1162,7 @@ export default function App() {
 
       {/* Main Content */}
       <main className={`flex-1 transition-all duration-300 ${isMobile ? 'ml-0' : (isSidebarOpen ? 'ml-[280px]' : 'ml-[80px]')}`}>
-        <nav className="h-16 md:h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 md:px-8 sticky top-0 z-30">
+        <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 md:px-8 sticky top-0 z-30 min-h-16 md:min-h-20" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
           <div className="flex items-center gap-3">
             {isMobile && (
               <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-gray-500 hover:bg-gray-50 rounded-xl min-w-[44px] min-h-[44px] flex items-center justify-center">
