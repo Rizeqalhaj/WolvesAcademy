@@ -21,7 +21,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "wolves-fallback-secret";
 interface TokenPayload { userId: number; email: string; role: string; }
 
 function signToken(payload: TokenPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: "30d" });
 }
 
 function verifyToken(authHeader: string | undefined): TokenPayload | null {
