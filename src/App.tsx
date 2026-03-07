@@ -1145,12 +1145,9 @@ const PlayerView = ({ user }: { user: User }) => {
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Welcome, {user.name}</h1>
           <p className="text-gray-500 mt-1">Group {playerData?.group_name || 'G1'} • Wolves Academy</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Loyalty Points</p>
-            <p className="text-xl font-bold text-wolves-plum">{playerData?.loyalty_points || 0}</p>
-          </div>
-          <img src="/wolves-logo.png" alt="Wolves" className="w-12 h-12 rounded-2xl object-cover" />
+        <div className="text-right">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Loyalty Points</p>
+          <p className="text-xl font-bold text-wolves-plum">{playerData?.loyalty_points || 0}</p>
         </div>
       </header>
 
