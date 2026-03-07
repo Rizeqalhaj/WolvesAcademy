@@ -1,27 +1,24 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getDb } from './_db.js';
+import { sql } from './_db.js';
+import { verifyToken } from './_auth.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const db = await getDb();
+  const payload = verifyToken(req);
+  if (!payload) return res.status(401).json({ error: 'Unauthorized' });
 
-  const [result] = db.exec(`
-    SELECT p.id, p.user_id, p.group_name, p.sessions_remaining, p.balance, p.loyalty_points, u.name, u.email
-    FROM players p
-    JOIN users u ON p.user_id = u.id
-  `);
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
-  if (!result) return res.json([]);
+  if (payload.role === 'player') {
+    const players = await sql`
+      SELECT id, name, email, group_name, sessions_remaining, balance, loyalty_points
+      FROM users WHERE id = ${payload.userId}
+    `;
+    return res.json(players);
+  }
 
-  const players = result.values.map((row) => ({
-    id: row[0],
-    user_id: row[1],
-    group_name: row[2],
-    sessions_remaining: row[3],
-    balance: row[4],
-    loyalty_points: row[5],
-    name: row[6],
-    email: row[7]
-  }));
-
-  res.json(players);
+  const players = await sql`
+    SELECT id, name, email, group_name, sessions_remaining, balance, loyalty_points
+    FROM users WHERE role = 'player' ORDER BY name
+  `;
+  return res.json(players);
 }

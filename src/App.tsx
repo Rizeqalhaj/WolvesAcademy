@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  TrendingUp, 
-  CreditCard, 
-  MessageSquare, 
-  Users, 
-  ClipboardCheck, 
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  LayoutDashboard,
+  Calendar,
+  TrendingUp,
+  CreditCard,
+  MessageSquare,
+  Users,
+  ClipboardCheck,
   Settings,
   Bell,
   ChevronRight,
@@ -18,9 +18,77 @@ import {
   Trophy,
   ArrowUpRight,
   Menu,
-  X
+  X,
+  Send,
+  Eye,
+  EyeOff,
+  Loader2,
+  BellRing
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+
+// --- Auth Helpers ---
+const TOKEN_KEY = 'wolves_token';
+
+function getToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+function setToken(token: string) {
+  localStorage.setItem(TOKEN_KEY, token);
+}
+
+function clearToken() {
+  localStorage.removeItem(TOKEN_KEY);
+}
+
+async function authFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const token = getToken();
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string> || {}),
+  };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (options.body && typeof options.body === 'string') {
+    headers['Content-Type'] = 'application/json';
+  }
+  const res = await fetch(url, { ...options, headers });
+  if (res.status === 401) {
+    clearToken();
+    window.location.reload();
+  }
+  return res;
+}
+
+// --- Push Notification Helpers ---
+async function subscribeToPush() {
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const vapidRes = await authFetch('/api/push/vapid-key');
+    const { publicKey } = await vapidRes.json();
+    if (!publicKey) return;
+
+    const subscription = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(publicKey),
+    });
+
+    await authFetch('/api/push/subscribe', {
+      method: 'POST',
+      body: JSON.stringify({ subscription }),
+    });
+  } catch (err) {
+    console.warn('Push subscription failed:', err);
+  }
+}
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
 
 // --- Types ---
 type Role = 'admin' | 'coach' | 'player';
@@ -105,7 +173,7 @@ const Badge = ({ children, color = 'blue' }: { children: React.ReactNode, color?
 const ScheduleView = () => {
   const [sessions, setSessions] = useState<Session[]>([]);
   useEffect(() => {
-    fetch('/api/sessions').then(res => res.json()).then(setSessions);
+    authFetch('/api/sessions').then(res => res.json()).then(setSessions);
   }, []);
 
   return (
@@ -150,7 +218,7 @@ const ScheduleView = () => {
 const PlayersView = () => {
   const [players, setPlayers] = useState<Player[]>([]);
   useEffect(() => {
-    fetch('/api/players').then(res => res.json()).then(setPlayers);
+    authFetch('/api/players').then(res => res.json()).then(setPlayers);
   }, []);
 
   return (
@@ -239,19 +307,18 @@ const AttendanceView = ({ role }: { role: Role }) => {
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    fetch('/api/sessions').then(res => res.json()).then(setSessions);
-    fetch('/api/players').then(res => res.json()).then(setPlayers);
+    authFetch('/api/sessions').then(res => res.json()).then(setSessions);
+    authFetch('/api/players').then(res => res.json()).then(setPlayers);
   }, []);
 
   const markAttendance = async (playerId: number, status: 'present' | 'absent') => {
     if (!selectedSession) return;
-    await fetch('/api/attendance', {
+    await authFetch('/api/attendance', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId: selectedSession.id, playerId, status })
+      body: JSON.stringify({ sessionId: selectedSession.id, playerId, status }),
     });
     // Refresh players to see session deduction
-    fetch('/api/players').then(res => res.json()).then(setPlayers);
+    authFetch('/api/players').then(res => res.json()).then(setPlayers);
   };
 
   return (
@@ -563,8 +630,8 @@ const AdminDashboard = () => {
   const [players, setPlayers] = useState<Player[]>([]);
 
   useEffect(() => {
-    fetch('/api/stats').then(res => res.json()).then(setStats);
-    fetch('/api/players').then(res => res.json()).then(setPlayers);
+    authFetch('/api/stats').then(res => res.json()).then(setStats);
+    authFetch('/api/players').then(res => res.json()).then(setPlayers);
   }, []);
 
   return (
@@ -723,7 +790,7 @@ const CoachView = ({ user }: { user: User }) => {
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
 
   useEffect(() => {
-    fetch('/api/sessions').then(res => res.json()).then(setSessions);
+    authFetch('/api/sessions').then(res => res.json()).then(setSessions);
   }, []);
 
   return (
@@ -786,7 +853,7 @@ const PlayerView = ({ user }: { user: User }) => {
   const [playerData, setPlayerData] = useState<Player | null>(null);
 
   useEffect(() => {
-    fetch('/api/players').then(res => res.json()).then(players => {
+    authFetch('/api/players').then(res => res.json()).then(players => {
       const p = players.find((pl: any) => pl.user_id === user.id);
       setPlayerData(p);
     });
@@ -917,10 +984,9 @@ const Chatbot = ({ userId }: { userId: number }) => {
     setIsTyping(true);
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await authFetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMsg, userId })
+        body: JSON.stringify({ message: userMsg }),
       });
       const data = await res.json();
       setMessages(prev => [...prev, { text: data.text, isBot: true }]);
@@ -1027,16 +1093,87 @@ export default function App() {
     return () => window.removeEventListener('resize', handler);
   }, []);
 
-  // Simple login simulation
-  const login = (role: Role) => {
-    const mockUsers = {
-      admin: { id: 1, name: 'Admin User', email: 'admin@wolves.jo', role: 'admin' },
-      coach: { id: 2, name: 'Coach Sam', email: 'coach@wolves.jo', role: 'coach' },
-      player: { id: 3, name: 'Ahmad Jordan', email: 'player@wolves.jo', role: 'player' }
-    };
-    setUser(mockUsers[role] as User);
-    setActiveTab('Dashboard');
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  // Check for existing token on mount
+  useEffect(() => {
+    const token = getToken();
+    if (token) {
+      authFetch('/api/auth/me')
+        .then(res => res.ok ? res.json() : Promise.reject())
+        .then(data => {
+          setUser(data.user as User);
+          setActiveTab('Dashboard');
+          // Subscribe to push after restoring session
+          if ('Notification' in window && Notification.permission === 'granted') {
+            subscribeToPush();
+          }
+        })
+        .catch(() => clearToken())
+        .finally(() => setIsCheckingAuth(false));
+    } else {
+      setIsCheckingAuth(false);
+    }
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    setLoginLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: loginEmail.trim(), password: loginPassword }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setLoginError(data.error || 'Login failed');
+        setLoginLoading(false);
+        return;
+      }
+
+      setToken(data.token);
+      setUser(data.user as User);
+      setActiveTab('Dashboard');
+
+      // Request push notification permission
+      if ('Notification' in window && 'serviceWorker' in navigator) {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          await subscribeToPush();
+        }
+      }
+    } catch {
+      setLoginError('Network error. Please try again.');
+    } finally {
+      setLoginLoading(false);
+    }
   };
+
+  const handleLogout = () => {
+    clearToken();
+    setUser(null);
+    setActiveTab('Dashboard');
+    setLoginEmail('');
+    setLoginPassword('');
+  };
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-[100dvh] bg-gray-50 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-wolves-plum animate-spin" />
+      </div>
+    );
+  }
 
   if (!user) {
     return (
@@ -1045,14 +1182,57 @@ export default function App() {
           <img src="/wolves-logo.png" alt="Wolves Academy" className="w-20 h-20 rounded-3xl mx-auto mb-6 object-cover" />
           <h1 className="text-2xl font-bold mb-2">Wolves Sports Academy</h1>
           <p className="text-gray-500 mb-8">Digital Transformation Platform</p>
-          
-          <div className="space-y-3">
-            <Button className="w-full" onClick={() => login('admin')}>Login as Admin</Button>
-            <Button className="w-full" variant="outline" onClick={() => login('coach')}>Login as Coach</Button>
-            <Button className="w-full" variant="outline" onClick={() => login('player')}>Login as Player/Parent</Button>
-          </div>
-          
-          <p className="mt-8 text-xs text-gray-400">Amman, Jordan • Powered by AI Studio</p>
+
+          <form onSubmit={handleLogin} className="space-y-4 text-left">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <input
+                type="email"
+                value={loginEmail}
+                onChange={e => setLoginEmail(e.target.value)}
+                placeholder="your@email.com"
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wolves-plum focus:border-transparent outline-none"
+                required
+                autoComplete="email"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={loginPassword}
+                  onChange={e => setLoginPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wolves-plum focus:border-transparent outline-none pr-12"
+                  required
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 p-1"
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {loginError && (
+              <div className="text-red-500 text-sm bg-red-50 p-3 rounded-xl">{loginError}</div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loginLoading}
+              className="w-full bg-wolves-plum text-white hover:bg-wolves-plum-dark rounded-xl px-6 py-3 font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              {loginLoading ? <Loader2 size={18} className="animate-spin" /> : null}
+              {loginLoading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+
+          <p className="mt-8 text-xs text-gray-400">Amman, Jordan • Wolves Sports Academy</p>
         </Card>
       </div>
     );
@@ -1151,7 +1331,7 @@ export default function App() {
 
         <div className="p-4 border-t border-gray-100" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
           <button
-            onClick={() => setUser(null)}
+            onClick={handleLogout}
             className="w-full flex items-center gap-4 p-3 rounded-xl text-red-500 hover:bg-red-50 transition-all min-h-[44px]"
           >
             <XCircle size={20} />

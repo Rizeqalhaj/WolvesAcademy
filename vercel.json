@@ -3,6 +3,11 @@
   "outputDirectory": "dist",
   "framework": null,
   "rewrites": [
+    { "source": "/api/auth/login", "destination": "/api/auth/login" },
+    { "source": "/api/auth/me", "destination": "/api/auth/me" },
+    { "source": "/api/push/subscribe", "destination": "/api/push/subscribe" },
+    { "source": "/api/push/send", "destination": "/api/push/send" },
+    { "source": "/api/push/vapid-key", "destination": "/api/push/vapid-key" },
     { "source": "/api/stats", "destination": "/api/stats" },
     { "source": "/api/players", "destination": "/api/players" },
     { "source": "/api/sessions", "destination": "/api/sessions" },

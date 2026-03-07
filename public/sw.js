@@ -1,4 +1,4 @@
-const CACHE_NAME = 'wolves-v1';
+const CACHE_NAME = 'wolves-v2';
 const STATIC_ASSETS = [
   '/',
   '/wolves-logo.png',
@@ -33,6 +33,36 @@ self.addEventListener('fetch', (event) => {
         return response;
       }).catch(() => cached);
       return cached || fetched;
+    })
+  );
+});
+
+// Push notification handler
+self.addEventListener('push', (event) => {
+  const data = event.data ? event.data.json() : {};
+  const title = data.title || 'Wolves Academy';
+  const options = {
+    body: data.body || '',
+    icon: data.icon || '/wolves-icon-192.png',
+    badge: data.badge || '/wolves-icon-192.png',
+    vibrate: [100, 50, 100],
+    data: { url: data.url || '/' },
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Notification click handler — open/focus the app
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      for (const client of windowClients) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      return clients.openWindow(url);
     })
   );
 });
