@@ -9,6 +9,7 @@ import {
   ClipboardCheck,
   Settings,
   Bell,
+  ChevronLeft,
   ChevronRight,
   Plus,
   Search,
@@ -174,12 +175,78 @@ const Badge = ({ children, color = 'blue' }: { children: React.ReactNode, color?
 
 const ScheduleView = () => {
   const [sessions, setSessions] = useState<Session[]>([]);
+  const today = new Date();
+  const [currentMonth, setCurrentMonth] = useState(today.getMonth());
+  const [currentYear, setCurrentYear] = useState(today.getFullYear());
+
   useEffect(() => {
     authFetch('/api/sessions').then(res => res.json()).then(setSessions);
   }, []);
 
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  const prevMonth = () => {
+    if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(y => y - 1); }
+    else setCurrentMonth(m => m - 1);
+  };
+  const nextMonth = () => {
+    if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(y => y + 1); }
+    else setCurrentMonth(m => m + 1);
+  };
+  const goToday = () => { setCurrentMonth(today.getMonth()); setCurrentYear(today.getFullYear()); };
+
+  const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+  const startOffset = (firstDayOfMonth + 6) % 7;
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const daysInPrevMonth = new Date(currentYear, currentMonth, 0).getDate();
+  const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+
+  const getSessionsForDay = (day: number, month: number, year: number) =>
+    sessions.filter(s => {
+      const d = new Date(s.start_time);
+      return d.getDate() === day && d.getMonth() === month && d.getFullYear() === year;
+    });
+
+  const calendarDays: { day: number; month: number; year: number; isCurrentMonth: boolean }[] = [];
+  for (let i = 0; i < totalCells; i++) {
+    if (i < startOffset) {
+      const day = daysInPrevMonth - startOffset + i + 1;
+      const m = currentMonth === 0 ? 11 : currentMonth - 1;
+      const y = currentMonth === 0 ? currentYear - 1 : currentYear;
+      calendarDays.push({ day, month: m, year: y, isCurrentMonth: false });
+    } else if (i >= startOffset + daysInMonth) {
+      const day = i - startOffset - daysInMonth + 1;
+      const m = currentMonth === 11 ? 0 : currentMonth + 1;
+      const y = currentMonth === 11 ? currentYear + 1 : currentYear;
+      calendarDays.push({ day, month: m, year: y, isCurrentMonth: false });
+    } else {
+      calendarDays.push({ day: i - startOffset + 1, month: currentMonth, year: currentYear, isCurrentMonth: true });
+    }
+  }
+
+  const isToday = (day: number, month: number, year: number) =>
+    day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+
+  const groupColor = (group: string) => {
+    if (group.includes('1')) return 'bg-purple-100 text-purple-700 border-purple-200';
+    if (group.includes('2')) return 'bg-blue-100 text-blue-700 border-blue-200';
+    return 'bg-green-100 text-green-700 border-green-200';
+  };
+
+  const formatTime = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+  };
+
+  const monthSessions = sessions
+    .filter(s => {
+      const d = new Date(s.start_time);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    })
+    .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <header className="flex flex-col sm:flex-row justify-between sm:items-end gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Academy Schedule</h1>
@@ -191,27 +258,97 @@ const ScheduleView = () => {
         </div>
       </header>
 
-      <div className="grid grid-cols-7 gap-1 sm:gap-4 overflow-x-auto">
-        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
-          <div key={day} className="text-center py-2">
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{day}</span>
-          </div>
-        ))}
-        {Array.from({ length: 35 }).map((_, i) => {
-          const daySessions = sessions.filter(s => new Date(s.start_time).getDate() === (i % 31) + 1);
-          return (
-            <div key={i} className="min-h-[120px] bg-white border border-gray-100 rounded-xl p-2 hover:shadow-md transition-shadow">
-              <span className="text-xs font-medium text-gray-400">{(i % 31) + 1}</span>
-              <div className="mt-2 space-y-1">
-                {daySessions.map(s => (
-                  <div key={s.id} className="text-[10px] p-1 bg-wolves-plum-light text-wolves-plum rounded font-bold truncate">
-                    {new Date(s.start_time).getHours()}:00 - {s.group_name}
-                  </div>
-                ))}
-              </div>
+      <div className="flex items-center justify-between bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+        <button onClick={prevMonth} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+          <ChevronLeft size={20} />
+        </button>
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900">{monthNames[currentMonth]} {currentYear}</h2>
+          {(currentMonth !== today.getMonth() || currentYear !== today.getFullYear()) && (
+            <button onClick={goToday} className="text-xs px-3 py-1 bg-wolves-plum text-white rounded-full hover:opacity-90 transition-opacity">
+              Today
+            </button>
+          )}
+        </div>
+        <button onClick={nextMonth} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+          <ChevronRight size={20} />
+        </button>
+      </div>
+
+      {/* Desktop Calendar Grid */}
+      <div className="hidden md:block">
+        <div className="grid grid-cols-7 gap-1">
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+            <div key={day} className="text-center py-3">
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{day}</span>
             </div>
-          );
-        })}
+          ))}
+          {calendarDays.map((cd, i) => {
+            const daySessions = getSessionsForDay(cd.day, cd.month, cd.year);
+            const todayHighlight = isToday(cd.day, cd.month, cd.year);
+            return (
+              <div
+                key={i}
+                className={`min-h-[130px] rounded-xl p-2.5 transition-shadow border ${
+                  cd.isCurrentMonth ? 'bg-white border-gray-100 hover:shadow-md' : 'bg-gray-50/50 border-transparent'
+                } ${todayHighlight ? 'ring-2 ring-wolves-plum/30 border-wolves-plum/20' : ''}`}
+              >
+                <span className={`text-sm font-semibold inline-flex items-center justify-center ${
+                  todayHighlight ? 'bg-wolves-plum text-white w-7 h-7 rounded-full' :
+                  cd.isCurrentMonth ? 'text-gray-700' : 'text-gray-300'
+                }`}>
+                  {cd.day}
+                </span>
+                <div className="mt-1.5 space-y-1">
+                  {daySessions.map(s => (
+                    <div key={s.id} className={`text-xs p-1.5 rounded-lg border font-medium ${groupColor(s.group_name)}`}>
+                      <div className="font-bold">{formatTime(s.start_time)}</div>
+                      <div className="truncate">{s.group_name} &bull; {s.coach_name || 'TBA'}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Mobile Agenda View */}
+      <div className="md:hidden space-y-3">
+        {monthSessions.length === 0 ? (
+          <Card>
+            <div className="text-center py-8 text-gray-400">
+              <Calendar size={40} className="mx-auto mb-3 opacity-50" />
+              <p className="font-medium">No sessions this month</p>
+            </div>
+          </Card>
+        ) : (
+          monthSessions.map(s => {
+            const d = new Date(s.start_time);
+            return (
+              <Card key={s.id}>
+                <div className="flex items-center gap-4">
+                  <div className="text-center min-w-[50px]">
+                    <div className="text-2xl font-bold text-gray-900">{d.getDate()}</div>
+                    <div className="text-xs text-gray-400 uppercase">{d.toLocaleDateString('en', { weekday: 'short' })}</div>
+                  </div>
+                  <div className="h-12 w-px bg-gray-200" />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-bold border ${groupColor(s.group_name)}`}>{s.group_name}</span>
+                      <span className="text-sm font-bold text-gray-900">{formatTime(s.start_time)}</span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                      <span>{s.coach_name || 'Coach TBA'}</span>
+                      <span>&bull;</span>
+                      <span>Capacity: {s.capacity}</span>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            );
+          })
+        )}
       </div>
     </div>
   );
