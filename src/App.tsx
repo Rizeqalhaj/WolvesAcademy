@@ -23,7 +23,9 @@ import {
   Eye,
   EyeOff,
   Loader2,
-  BellRing
+  BellRing,
+  Gift,
+  UserPlus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -994,7 +996,7 @@ const PlayerView = ({ user }: { user: User }) => {
 
   useEffect(() => {
     authFetch('/api/players').then(res => res.json()).then(players => {
-      const p = players.find((pl: any) => pl.user_id === user.id);
+      const p = players.find((pl: any) => pl.id === user.id || pl.user_id === user.id);
       setPlayerData(p);
     });
   }, [user.id]);
@@ -1101,6 +1103,208 @@ const PlayerView = ({ user }: { user: User }) => {
           <Button variant="outline" className="w-full mt-6">Download Full History</Button>
         </Card>
       </div>
+
+      {/* Refer a Friend */}
+      <ReferFriendCard />
+    </div>
+  );
+};
+
+// --- Refer a Friend Card (for Players) ---
+
+const ReferFriendCard = () => {
+  const [referralData, setReferralData] = useState<any>(null);
+  const [stats, setStats] = useState<any>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    authFetch('/api/referral/code').then(r => r.json()).then(setReferralData);
+    authFetch('/api/referral/stats').then(r => r.json()).then(setStats);
+  }, []);
+
+  const copyLink = () => {
+    if (referralData?.shareUrl) {
+      navigator.clipboard.writeText(referralData.shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  if (!referralData) return null;
+
+  return (
+    <Card>
+      <div className="flex items-center gap-3 mb-4">
+        <div className="p-2 bg-wolves-gold-light rounded-lg text-wolves-gold">
+          <Users size={20} />
+        </div>
+        <h2 className="text-xl font-bold">Refer a Friend</h2>
+      </div>
+      <p className="text-sm text-gray-500 mb-4">Share your code and earn <strong>+2 free sessions</strong> for every friend who joins!</p>
+
+      <div className="bg-gray-50 rounded-2xl p-4 text-center mb-4">
+        <p className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-1">Your Referral Code</p>
+        <p className="text-3xl font-bold text-wolves-plum tracking-widest">{referralData.code}</p>
+      </div>
+
+      <div className="flex gap-2 mb-6">
+        <a
+          href={referralData.whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 bg-[#25D366] text-white rounded-xl px-4 py-3 font-semibold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-all"
+        >
+          <MessageSquare size={16} /> WhatsApp
+        </a>
+        <button
+          onClick={copyLink}
+          className="flex-1 bg-gray-100 text-gray-700 rounded-xl px-4 py-3 font-semibold text-sm flex items-center justify-center gap-2 hover:bg-gray-200 transition-all"
+        >
+          {copied ? <CheckCircle2 size={16} className="text-green-500" /> : <ChevronRight size={16} />}
+          {copied ? 'Copied!' : 'Copy Link'}
+        </button>
+      </div>
+
+      {stats && (
+        <div className="flex gap-4 text-center">
+          <div className="flex-1 bg-wolves-plum-light rounded-xl p-3">
+            <p className="text-2xl font-bold text-wolves-plum">{stats.totalReferred}</p>
+            <p className="text-xs text-gray-500">Friends Referred</p>
+          </div>
+          <div className="flex-1 bg-wolves-gold-light rounded-xl p-3">
+            <p className="text-2xl font-bold text-wolves-gold">{stats.totalSessionsEarned}</p>
+            <p className="text-xs text-gray-500">Sessions Earned</p>
+          </div>
+        </div>
+      )}
+
+      {stats?.referrals?.length > 0 && (
+        <div className="mt-4 space-y-2">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Your Referrals</p>
+          {stats.referrals.map((r: any) => (
+            <div key={r.id} className="flex justify-between items-center p-2 bg-gray-50 rounded-xl">
+              <div>
+                <p className="text-sm font-medium">{r.referred_name}</p>
+                <p className="text-xs text-gray-400">{r.referred_email}</p>
+              </div>
+              <Badge color={r.status === 'rewarded' ? 'green' : r.status === 'pending' ? 'orange' : 'blue'}>
+                {r.status}
+              </Badge>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+};
+
+// --- Admin Referrals View ---
+
+const ReferralsView = () => {
+  const [data, setData] = useState<any>(null);
+  const [approving, setApproving] = useState<number | null>(null);
+
+  const loadData = () => {
+    authFetch('/api/referral/list').then(r => r.json()).then(setData);
+  };
+
+  useEffect(() => { loadData(); }, []);
+
+  const approveReferral = async (referralId: number) => {
+    setApproving(referralId);
+    try {
+      const res = await authFetch('/api/referral/approve', {
+        method: 'POST',
+        body: JSON.stringify({ referralId }),
+      });
+      if (res.ok) loadData();
+    } finally {
+      setApproving(null);
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      <header>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Referral Management</h1>
+        <p className="text-gray-500 mt-1">Track referrals and approve rewards</p>
+      </header>
+
+      {data?.stats && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <Card>
+            <h3 className="text-gray-500 text-sm font-medium">Total Referrals</h3>
+            <p className="text-2xl font-bold mt-1">{data.stats.total}</p>
+          </Card>
+          <Card>
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-gray-500 text-sm font-medium">Pending</h3>
+                <p className="text-2xl font-bold mt-1">{data.stats.pending}</p>
+              </div>
+              <Badge color="orange">Needs Action</Badge>
+            </div>
+          </Card>
+          <Card>
+            <h3 className="text-gray-500 text-sm font-medium">Rewarded</h3>
+            <p className="text-2xl font-bold mt-1">{data.stats.rewarded}</p>
+          </Card>
+        </div>
+      )}
+
+      <Card>
+        <h2 className="text-xl font-bold mb-6">All Referrals</h2>
+        {!data?.referrals?.length ? (
+          <div className="text-center py-12 text-gray-400">
+            <Users size={48} className="mx-auto mb-4 opacity-50" />
+            <p className="font-medium">No referrals yet</p>
+            <p className="text-sm mt-1">Players can share their referral codes to invite new members</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {data.referrals.map((r: any) => (
+              <div key={r.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gray-50 rounded-2xl">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-wolves-plum-light flex items-center justify-center text-wolves-plum font-bold text-xs">
+                      {r.referrer_name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{r.referrer_name}</p>
+                      <p className="text-xs text-gray-400">Referrer</p>
+                    </div>
+                  </div>
+                  <ArrowUpRight size={16} className="text-gray-300" />
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-wolves-gold-light flex items-center justify-center text-wolves-copper font-bold text-xs">
+                      {r.referred_name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{r.referred_name}</p>
+                      <p className="text-xs text-gray-400">{r.referred_email}</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Badge color={r.status === 'rewarded' ? 'green' : 'orange'}>
+                    {r.status === 'rewarded' ? 'Rewarded' : 'Pending'}
+                  </Badge>
+                  {r.status === 'pending' && (
+                    <button
+                      onClick={() => approveReferral(r.id)}
+                      disabled={approving === r.id}
+                      className="bg-wolves-plum text-white rounded-xl px-4 py-2 text-sm font-semibold hover:bg-wolves-plum-dark transition-all disabled:opacity-60 flex items-center gap-1"
+                    >
+                      {approving === r.id ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle2 size={14} />}
+                      Approve
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </Card>
     </div>
   );
 };
@@ -1240,6 +1444,50 @@ export default function App() {
   const [showPassword, setShowPassword] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
+  // Referral registration state
+  const [showRegister, setShowRegister] = useState(false);
+  const [refCode, setRefCode] = useState('');
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPhone, setRegPhone] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regLoading, setRegLoading] = useState(false);
+  const [regError, setRegError] = useState('');
+  const [regSuccess, setRegSuccess] = useState('');
+
+  // Detect ?ref=CODE in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      setRefCode(ref.toUpperCase());
+      setShowRegister(true);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegError('');
+    setRegSuccess('');
+    setRegLoading(true);
+    try {
+      const res = await fetch('/api/referral/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: regName.trim(), email: regEmail.trim(), phone: regPhone.trim() || undefined, password: regPassword, referralCode: refCode.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setRegError(data.error || 'Registration failed'); return; }
+      setRegSuccess(data.message || 'Registration successful! You can now log in.');
+      setRegName(''); setRegEmail(''); setRegPhone(''); setRegPassword(''); setRefCode('');
+    } catch {
+      setRegError('Network error. Please try again.');
+    } finally {
+      setRegLoading(false);
+    }
+  };
+
   // Check for existing token on mount
   useEffect(() => {
     const token = getToken();
@@ -1372,8 +1620,127 @@ export default function App() {
             </button>
           </form>
 
-          <p className="mt-8 text-xs text-gray-400">Amman, Jordan • Wolves Sports Academy</p>
+          <div className="mt-6 pt-6 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={() => setShowRegister(true)}
+              className="text-sm text-wolves-plum font-medium hover:underline flex items-center justify-center gap-1 mx-auto"
+            >
+              <UserPlus size={14} /> Have a referral code? Register here
+            </button>
+          </div>
+
+          <p className="mt-6 text-xs text-gray-400">Amman, Jordan • Wolves Sports Academy</p>
         </Card>
+
+        {/* Registration Modal */}
+        <AnimatePresence>
+          {showRegister && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+              onClick={(e) => { if (e.target === e.currentTarget) setShowRegister(false); }}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+              >
+                <Card className="max-w-md w-full p-6 sm:p-8 relative">
+                  <button onClick={() => setShowRegister(false)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1">
+                    <X size={20} />
+                  </button>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="p-2 bg-wolves-plum-light rounded-lg text-wolves-plum">
+                      <UserPlus size={20} />
+                    </div>
+                    <h2 className="text-xl font-bold">Join Wolves Academy</h2>
+                  </div>
+                  <p className="text-sm text-gray-500 mb-6">Register with a referral code to get a bonus session!</p>
+
+                  {regSuccess ? (
+                    <div className="text-center py-4">
+                      <CheckCircle2 size={48} className="text-green-500 mx-auto mb-3" />
+                      <p className="text-green-600 font-medium mb-4">{regSuccess}</p>
+                      <button onClick={() => { setShowRegister(false); setRegSuccess(''); }} className="bg-wolves-plum text-white rounded-xl px-6 py-3 font-semibold hover:bg-wolves-plum-dark transition-all">
+                        Go to Login
+                      </button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleRegister} className="space-y-3 text-left">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Referral Code</label>
+                        <input
+                          type="text"
+                          value={refCode}
+                          onChange={e => setRefCode(e.target.value.toUpperCase())}
+                          placeholder="WLV-XXXX"
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wolves-plum focus:border-transparent outline-none font-mono tracking-wider"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                        <input
+                          type="text"
+                          value={regName}
+                          onChange={e => setRegName(e.target.value)}
+                          placeholder="Your full name"
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wolves-plum focus:border-transparent outline-none"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <input
+                          type="email"
+                          value={regEmail}
+                          onChange={e => setRegEmail(e.target.value)}
+                          placeholder="your@email.com"
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wolves-plum focus:border-transparent outline-none"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone <span className="text-gray-400">(optional)</span></label>
+                        <input
+                          type="tel"
+                          value={regPhone}
+                          onChange={e => setRegPhone(e.target.value)}
+                          placeholder="+962 7X XXX XXXX"
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wolves-plum focus:border-transparent outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input
+                          type="password"
+                          value={regPassword}
+                          onChange={e => setRegPassword(e.target.value)}
+                          placeholder="Create a password"
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wolves-plum focus:border-transparent outline-none"
+                          required
+                          minLength={6}
+                        />
+                      </div>
+                      {regError && <div className="text-red-500 text-sm bg-red-50 p-3 rounded-xl">{regError}</div>}
+                      <button
+                        type="submit"
+                        disabled={regLoading}
+                        className="w-full bg-wolves-plum text-white hover:bg-wolves-plum-dark rounded-xl px-6 py-3 font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-60 mt-2"
+                      >
+                        {regLoading ? <Loader2 size={18} className="animate-spin" /> : <UserPlus size={18} />}
+                        {regLoading ? 'Registering...' : 'Register'}
+                      </button>
+                    </form>
+                  )}
+                </Card>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }
@@ -1385,6 +1752,7 @@ export default function App() {
     { icon: ClipboardCheck, label: 'Attendance', roles: ['admin', 'coach'] },
     { icon: TrendingUp, label: 'Performance', roles: ['admin', 'coach', 'player'] },
     { icon: CreditCard, label: 'Payments', roles: ['admin', 'player'] },
+    { icon: Gift, label: 'Referrals', roles: ['admin'] },
     { icon: Settings, label: 'Settings', roles: ['admin', 'coach', 'player'] },
   ].filter(item => item.roles.includes(user.role));
 
@@ -1404,6 +1772,8 @@ export default function App() {
         return <PerformanceView role={user.role} user={user} />;
       case 'Payments':
         return <PaymentsView role={user.role} user={user} />;
+      case 'Referrals':
+        return <ReferralsView />;
       case 'Settings':
         return <SettingsView user={user} />;
       default:

@@ -159,6 +159,74 @@ async function startServer() {
     res.json({ sent, failed, total: subscriptions.length });
   });
 
+  // --- Referral Routes ---
+  app.get("/api/referral/code", async (req, res) => {
+    const payload = verifyToken(req.headers.authorization);
+    if (!payload) return res.status(401).json({ error: "Unauthorized" });
+    const users = await sql`SELECT referral_code, name FROM users WHERE id = ${payload.userId}`;
+    if (users.length === 0) return res.status(404).json({ error: "User not found" });
+    const { referral_code, name } = users[0];
+    const baseUrl = `http://localhost:${PORT}`;
+    const shareUrl = `${baseUrl}/?ref=${referral_code}`;
+    const shareText = `Join me at Wolves Sports Academy! Use my code ${referral_code} for a free bonus session 🏀\n${shareUrl}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+    res.json({ code: referral_code, name, shareUrl, shareText, whatsappUrl });
+  });
+
+  app.get("/api/referral/stats", async (req, res) => {
+    const payload = verifyToken(req.headers.authorization);
+    if (!payload) return res.status(401).json({ error: "Unauthorized" });
+    const referrals = await sql`SELECT r.id, r.status, r.created_at, r.rewarded_at, r.referrer_reward, u.name as referred_name, u.email as referred_email FROM referrals r JOIN users u ON r.referred_id = u.id WHERE r.referrer_id = ${payload.userId} ORDER BY r.created_at DESC`;
+    const totalReferred = referrals.length;
+    const totalSessionsEarned = referrals.filter((r: any) => r.status === "rewarded").reduce((s: number, r: any) => s + (r.referrer_reward || 0), 0);
+    res.json({ totalReferred, totalSessionsEarned, referrals });
+  });
+
+  app.post("/api/referral/register", async (req, res) => {
+    const { name, email, phone, password, referralCode } = req.body;
+    if (!name || !email || !password || !referralCode) return res.status(400).json({ error: "Name, email, password, and referral code are required" });
+    const referrers = await sql`SELECT id, name FROM users WHERE referral_code = ${referralCode.toUpperCase().trim()}`;
+    if (referrers.length === 0) return res.status(400).json({ error: "Invalid referral code" });
+    const referrer = referrers[0];
+    const existing = await sql`SELECT id FROM users WHERE email = ${email.toLowerCase().trim()}`;
+    if (existing.length > 0) return res.status(400).json({ error: "An account with this email already exists" });
+    const bcryptLib = await import("bcryptjs");
+    const salt = await bcryptLib.default.genSalt(10);
+    const passwordHash = await bcryptLib.default.hash(password, salt);
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let newCode = "WLV-";
+    for (let i = 0; i < 4; i++) newCode += chars[Math.floor(Math.random() * chars.length)];
+    const newUsers = await sql`INSERT INTO users (name, email, phone, password_hash, role, referral_code, referred_by, group_name, sessions_remaining, balance, loyalty_points) VALUES (${name.trim()}, ${email.toLowerCase().trim()}, ${phone || null}, ${passwordHash}, 'player', ${newCode}, ${referrer.id}, 'G3', 0, 0, 0) RETURNING id`;
+    await sql`INSERT INTO referrals (referrer_id, referred_id, status) VALUES (${referrer.id}, ${newUsers[0].id}, 'pending')`;
+    res.json({ success: true, message: `Welcome to Wolves Academy! You were referred by ${referrer.name}.` });
+  });
+
+  app.get("/api/referral/list", async (req, res) => {
+    const payload = verifyToken(req.headers.authorization);
+    if (!payload) return res.status(401).json({ error: "Unauthorized" });
+    if (payload.role !== "admin") return res.status(403).json({ error: "Admin only" });
+    const referrals = await sql`SELECT r.id, r.status, r.referrer_reward, r.referred_reward, r.created_at, r.rewarded_at, referrer.name as referrer_name, referrer.email as referrer_email, referred.name as referred_name, referred.email as referred_email FROM referrals r JOIN users referrer ON r.referrer_id = referrer.id JOIN users referred ON r.referred_id = referred.id ORDER BY r.created_at DESC`;
+    const [stats] = await sql`SELECT COUNT(*) as total, COUNT(*) FILTER (WHERE status = 'pending') as pending, COUNT(*) FILTER (WHERE status = 'rewarded') as rewarded FROM referrals`;
+    res.json({ referrals, stats });
+  });
+
+  app.post("/api/referral/approve", async (req, res) => {
+    const payload = verifyToken(req.headers.authorization);
+    if (!payload) return res.status(401).json({ error: "Unauthorized" });
+    if (payload.role !== "admin") return res.status(403).json({ error: "Admin only" });
+    const { referralId } = req.body;
+    if (!referralId) return res.status(400).json({ error: "referralId is required" });
+    const refs = await sql`SELECT r.*, referrer.name as referrer_name, referred.name as referred_name FROM referrals r JOIN users referrer ON r.referrer_id = referrer.id JOIN users referred ON r.referred_id = referred.id WHERE r.id = ${referralId}`;
+    if (refs.length === 0) return res.status(404).json({ error: "Referral not found" });
+    const ref = refs[0];
+    if (ref.status === "rewarded") return res.status(400).json({ error: "Already rewarded" });
+    await sql`UPDATE users SET sessions_remaining = sessions_remaining + ${ref.referrer_reward} WHERE id = ${ref.referrer_id}`;
+    await sql`UPDATE users SET sessions_remaining = sessions_remaining + ${ref.referred_reward} WHERE id = ${ref.referred_id}`;
+    await sql`UPDATE users SET loyalty_points = loyalty_points + 50 WHERE id = ${ref.referrer_id}`;
+    await sql`UPDATE referrals SET status = 'rewarded', rewarded_at = NOW() WHERE id = ${referralId}`;
+    res.json({ success: true, message: `Rewarded: ${ref.referrer_name} +${ref.referrer_reward} sessions, ${ref.referred_name} +${ref.referred_reward} session` });
+  });
+
   // --- Chat Route ---
   app.post("/api/chat", async (req, res) => {
     const payload = verifyToken(req.headers.authorization);
