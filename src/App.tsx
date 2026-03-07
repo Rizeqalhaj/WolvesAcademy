@@ -781,7 +781,147 @@ const AdminDashboard = () => {
           <Button variant="ghost" className="w-full mt-8 text-sm">View All Activity</Button>
         </Card>
       </div>
+
+      {/* Send Notification Panel */}
+      <SendNotificationPanel players={players} />
     </div>
+  );
+};
+
+const SendNotificationPanel = ({ players }: { players: Player[] }) => {
+  const [title, setTitle] = useState('');
+  const [body, setBody] = useState('');
+  const [target, setTarget] = useState<'all' | 'group' | 'user'>('all');
+  const [targetGroup, setTargetGroup] = useState('G1');
+  const [targetUserId, setTargetUserId] = useState<number | null>(null);
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<string | null>(null);
+
+  const handleSend = async () => {
+    if (!title.trim()) return;
+    setSending(true);
+    setResult(null);
+
+    const payload: any = { title: title.trim(), body: body.trim() };
+    if (target === 'group') payload.targetGroup = targetGroup;
+    if (target === 'user' && targetUserId) payload.targetUserIds = [targetUserId];
+
+    try {
+      const res = await authFetch('/api/push/send', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setResult(`Sent to ${data.sent} device(s)${data.failed ? `, ${data.failed} failed` : ''}`);
+        setTitle('');
+        setBody('');
+      } else {
+        setResult(data.error || 'Failed to send');
+      }
+    } catch {
+      setResult('Network error');
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const groups = [...new Set(players.map(p => p.group_name).filter(Boolean))];
+
+  return (
+    <Card>
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 bg-wolves-plum-light rounded-lg text-wolves-plum">
+          <BellRing size={20} />
+        </div>
+        <h2 className="text-xl font-bold">Send Notification</h2>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Send To</label>
+          <div className="flex gap-2">
+            {(['all', 'group', 'user'] as const).map(t => (
+              <button
+                key={t}
+                onClick={() => setTarget(t)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  target === t
+                    ? 'bg-wolves-plum text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                }`}
+              >
+                {t === 'all' ? 'Everyone' : t === 'group' ? 'Group' : 'Player'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {target === 'group' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Select Group</label>
+            <select
+              value={targetGroup}
+              onChange={e => setTargetGroup(e.target.value)}
+              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl"
+            >
+              {groups.map(g => <option key={g} value={g}>{g}</option>)}
+            </select>
+          </div>
+        )}
+
+        {target === 'user' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Select Player</label>
+            <select
+              value={targetUserId || ''}
+              onChange={e => setTargetUserId(Number(e.target.value))}
+              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl"
+            >
+              <option value="">Choose a player...</option>
+              {players.map(p => <option key={p.id} value={p.id}>{p.name} ({p.email})</option>)}
+            </select>
+          </div>
+        )}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+          <input
+            type="text"
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            placeholder="e.g. Session Reminder"
+            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wolves-plum outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Message (optional)</label>
+          <input
+            type="text"
+            value={body}
+            onChange={e => setBody(e.target.value)}
+            placeholder="e.g. Don't forget your session at 5 PM!"
+            className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-wolves-plum outline-none"
+          />
+        </div>
+
+        {result && (
+          <div className={`text-sm p-3 rounded-xl ${result.startsWith('Sent') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+            {result}
+          </div>
+        )}
+
+        <button
+          onClick={handleSend}
+          disabled={sending || !title.trim()}
+          className="w-full bg-wolves-plum text-white hover:bg-wolves-plum-dark rounded-xl px-6 py-3 font-semibold transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+        >
+          {sending ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
+          {sending ? 'Sending...' : 'Send Notification'}
+        </button>
+      </div>
+    </Card>
   );
 };
 
